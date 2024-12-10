@@ -10,4 +10,10 @@ concept Hashable = requires(T a) {
     { std::hash<T>{}(a) } -> ConvertibleTo<size_t>;
 };
 
+template<typename T>
+concept EqualityComparable = requires(T a, T b) {
+    { a == b } -> ConvertibleTo<bool>;
+    { b == a } -> ConvertibleTo<bool>;
+};
+
 #endif // CONCEPTS_H
