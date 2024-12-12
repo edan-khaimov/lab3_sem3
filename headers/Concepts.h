@@ -14,6 +14,20 @@ template<typename T>
 concept EqualityComparable = requires(T a, T b) {
     { a == b } -> ConvertibleTo<bool>;
     { b == a } -> ConvertibleTo<bool>;
+    { a != b } -> ConvertibleTo<bool>;
+    { b != a } -> ConvertibleTo<bool>;
 };
+
+template<typename T>
+concept Integer = isIntegralValue<T>;
+
+template<typename T>
+concept FloatingPoint = isFloatingPointValue<T>;
+
+template<typename T>
+concept Pointer = isPointerValue<T>;
+
+template<typename T>
+concept String = (sameAsValue<T, std::string> || sameAsValue<T, const char*>);
 
 #endif // CONCEPTS_H
