@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 3.29)
-project(ab3)
+project(lab3)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(ab3 main.cpp
+add_executable(lab3 main.cpp
         headers/Concepts.h
-        headers/TypeTraits.h)
+        headers/TypeTraits.h
+        headers/MurmurHash.h
+        headers/FNV1aHash.h
+)

@@ -5,9 +5,9 @@
 template<typename From, typename To>
 concept ConvertibleTo = requires(From from) { static_cast<To>(from); } && isConvertibleValue<From, To>;
 
-template<typename T>
-concept Hashable = requires(T a) {
-    { std::hash<T>{}(a) } -> ConvertibleTo<size_t>;
+template<typename T, typename Hash>
+concept Hashable = requires(T a, Hash hash) {
+    { hash(a) } -> ConvertibleTo<size_t>;
 };
 
 template<typename T>
