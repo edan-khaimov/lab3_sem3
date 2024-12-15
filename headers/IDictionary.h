@@ -6,22 +6,22 @@
 template<typename TKey, typename TElement, typename Hasher = std::hash<TKey>>
     requires Hashable<TKey, Hasher> && EqualityComparable<TKey>
 class IDictionary final {
-    struct Slot {
+    struct Entry {
         TKey key;
         TElement element;
         size_t distance = 0;
         bool occupied = false;
 
-        Slot() = default;
+        Entry() = default;
 
-        Slot(const TKey& key, const TElement& element, const size_t distance, const bool occupied) :
+        Entry(const TKey& key, const TElement& element, const size_t distance, const bool occupied) :
             key(key), element(element), distance(distance), occupied(occupied) {}
 
-        Slot(TKey&& key, TElement&& element, const size_t distance, const bool occupied) :
+        Entry(TKey&& key, TElement&& element, const size_t distance, const bool occupied) :
             key(std::move(key)), element(std::move(element)), distance(distance), occupied(occupied) {}
     };
 
-    ArraySequence<Slot> table;
+    ArraySequence<Entry> table;
     size_t size;
     size_t capacity;
     float maxLoadFactor;
@@ -29,9 +29,9 @@ class IDictionary final {
     size_t Hash(const TKey& key) const { return Hasher{}(key) % capacity; }
 
     void Rehash() {
-        ArraySequence<Slot> oldTable = std::move(table);
+        ArraySequence<Entry> oldTable = std::move(table);
         capacity *= 2;
-        table = ArraySequence<Slot>(capacity);
+        table = ArraySequence<Entry>(capacity);
         size = 0;
 
         for (auto& slot: oldTable) {
@@ -43,7 +43,7 @@ class IDictionary final {
 
 public:
     explicit IDictionary(const size_t capacity = 16, const float maxLoadFactor = 0.9) :
-        table(ArraySequence<Slot>(capacity)), size(0), capacity(capacity), maxLoadFactor(maxLoadFactor) {}
+        table(ArraySequence<Entry>(capacity)), size(0), capacity(capacity), maxLoadFactor(maxLoadFactor) {}
 
     IDictionary(const IDictionary& other) :
         table(other.table), size(other.size), capacity(other.capacity), maxLoadFactor(other.maxLoadFactor) {}
@@ -60,104 +60,91 @@ public:
         }
 
         size_t index = Hash(key);
-        size_t distance = 0;
 
-        Slot newSlot = {key, element, 0, true};
+        Entry newEntry = {key, element, 0, true};
 
-        while (true) {
-            Slot& currentSlot = table[index];
-
-            if (!currentSlot.occupied) {
-                table[index] = std::move(newSlot);
-                ++size;
+        while (table[index].occupied) {
+            if (newEntry.key == table[index].key) {
+                table[index].element = newEntry.element;
                 return;
             }
 
-            if (currentSlot.key == key) {
-                currentSlot.element = element;
-                return;
+            if (table[index].distance < newEntry.distance) {
+                std::swap(newEntry, table[index]);
             }
 
-            if (currentSlot.distance < distance) {
-                std::swap(newSlot, currentSlot);
-
-            }
-
-            ++distance;
+            ++newEntry.distance;
             index = (index + 1) % capacity;
         }
-    };
+
+        table[index] = std::move(newEntry);
+        ++size;
+    }
 
     TElement& Get(const TKey& key) {
         size_t index = Hash(key);
         size_t distance = 0;
 
-        while (true) {
-            Slot& currentEntry = table[index];
-
-            if (!currentEntry.occupied || distance > currentEntry.distance) {
-                throw std::runtime_error("Key not found");
+        while (table[index].occupied) {
+            if (table[index].key == key) {
+                return table[index].element;
             }
 
-            if (currentEntry.key == key) {
-                return currentEntry.element;
+            if (distance > table[index].distance) {
+                throw std::runtime_error("Key not found");
             }
 
             ++distance;
             index = (index + 1) % capacity;
         }
+        throw std::runtime_error("Key not found");
     }
 
     void Remove(const TKey& key) {
         size_t index = Hash(key);
         size_t distance = 0;
 
-        while (true) {
-            Slot& currentSlot = table[index];
-
-            if (!currentSlot.occupied || distance > currentSlot.distance) {
-                throw std::runtime_error("Key not found");
+        while (table[index].occupied) {
+            if (table[index].key == key) {
+                table[index].occupied = false;
+                size_t nextIndex = (index + 1) % capacity;
+                while (table[nextIndex].occupied && table[nextIndex].distance > 0) {
+                    std::swap(table[index], table[nextIndex]);
+                    --table[index].distance;
+                    ++nextIndex;
+                }
+                --size;
+                return;
             }
 
-            if (currentSlot.key == key) {
-                currentSlot.occupied = false;
-                --size;
-                break;
+            if (distance > table[index].distance) {
+                throw std::runtime_error("Key not found");
             }
 
             ++distance;
             index = (index + 1) % capacity;
         }
 
-        size_t nextIndex = (index + 1) % capacity;
-        while (table[nextIndex].occupied && table[nextIndex].distance > 0) {
-            table[index] = std::move(table[nextIndex]);
-            --table[index].distance;
-            table[nextIndex].occupied = false;
-
-            index = nextIndex;
-            nextIndex = (index + 1) % capacity;
-        }
+        throw std::runtime_error("Key not found");
     }
 
     bool Contains(const TKey& key) const {
         size_t index = Hash(key);
         size_t distance = 0;
 
-        while (true) {
-            const Slot& currentEntry = table[index];
-
-            if (!currentEntry.occupied || distance > currentEntry.distance) {
-                return false;
+        while (table[index].occupied) {
+            if (table[index].key == key) {
+                return true;
             }
 
-            if (currentEntry.key == key) {
-                return true;
+            if (distance > table[index].distance) {
+                return false;
             }
 
             ++distance;
             index = (index + 1) % capacity;
         }
+        return false;
     }
 
     size_t GetCount() const { return size; }
@@ -165,8 +152,9 @@ public:
     size_t GetCapacity() const { return capacity; }
 
     class Iterator {
-        typename ArraySequence<Slot>::Iterator current;
-        typename ArraySequence<Slot>::Iterator end;
+        using InnerIterator = typename ArraySequence<Entry>::Iterator;
+        InnerIterator current;
+        InnerIterator end;
 
         void skipEmpty() {
             while (current != end && !current->occupied) {
@@ -176,17 +164,19 @@ public:
 
     public:
         using iterator_category = std::forward_iterator_tag;
-        using value_type = std::pair<TKey, TElement>;
+        using value_type = Entry;
         using difference_type = std::ptrdiff_t;
         using pointer = value_type*;
         using reference = value_type&;
 
-        Iterator(typename ArraySequence<Slot>::Iterator start, typename ArraySequence<Slot>::Iterator end) :
+        Iterator(InnerIterator start, InnerIterator end) :
             current(start), end(end) {
             skipEmpty();
         }
 
-        value_type operator*() const { return {current->key, current->element}; }
+        reference operator*() const { return *current; }
+
+        pointer operator->() const { return &(*current); }
 
         Iterator& operator++() {
             ++current;

@@ -8,4 +8,5 @@ add_executable(lab3 main.cpp
         headers/TypeTraits.h
         headers/MurmurHash.h
         headers/FNV1aHash.h
+        headers/IDictionary.h
 )
