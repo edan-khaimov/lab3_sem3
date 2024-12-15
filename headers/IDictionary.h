@@ -7,10 +7,12 @@ template<typename TKey, typename TElement, typename Hasher = std::hash<TKey>>
     requires Hashable<TKey, Hasher> && EqualityComparable<TKey>
 class IDictionary final {
     struct Slot {
-        const TKey key;
+        TKey key;
         TElement element;
-        size_t distance;
-        bool occupied;
+        size_t distance = 0;
+        bool occupied = false;
+
+        Slot() = default;
 
         Slot(const TKey& key, const TElement& element, const size_t distance, const bool occupied) :
             key(key), element(element), distance(distance), occupied(occupied) {}
@@ -41,7 +43,7 @@ class IDictionary final {
 
 public:
     explicit IDictionary(const size_t capacity = 16, const float maxLoadFactor = 0.9) :
-        size(0), capacity(capacity), maxLoadFactor(maxLoadFactor) {}
+        table(ArraySequence<Slot>(capacity)), size(0), capacity(capacity), maxLoadFactor(maxLoadFactor) {}
 
     IDictionary(const IDictionary& other) :
         table(other.table), size(other.size), capacity(other.capacity), maxLoadFactor(other.maxLoadFactor) {}
@@ -78,6 +80,7 @@ public:
 
             if (currentSlot.distance < distance) {
                 std::swap(newSlot, currentSlot);
+
             }
 
             ++distance;
@@ -103,7 +106,7 @@ public:
             ++distance;
             index = (index + 1) % capacity;
         }
-    };
+    }
 
     void Remove(const TKey& key) {
         size_t index = Hash(key);
@@ -138,11 +141,22 @@ public:
     }
 
     bool Contains(const TKey& key) const {
-        try {
-            Get(key);
-            return true;
-        } catch (const std::runtime_error&) {
-            return false;
+        size_t index = Hash(key);
+        size_t distance = 0;
+
+        while (true) {
+            const Slot& currentEntry = table[index];
+
+            if (!currentEntry.occupied || distance > currentEntry.distance) {
+                return false;
+            }
+
+            if (currentEntry.key == key) {
+                return true;
+            }
+
+            ++distance;
+            index = (index + 1) % capacity;
         }
     }
 
