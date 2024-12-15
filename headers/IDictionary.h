@@ -106,7 +106,7 @@ public:
     };
 
     void Remove(const TKey& key) {
-        size_t index = hash(key);
+        size_t index = Hash(key);
         size_t distance = 0;
 
         while (true) {
@@ -149,7 +149,6 @@ public:
     size_t GetCount() const { return size; }
 
     size_t GetCapacity() const { return capacity; }
-
 
     class Iterator {
         typename ArraySequence<Slot>::Iterator current;
@@ -197,7 +196,7 @@ public:
     Iterator end() { return Iterator(table.end(), table.end()); }
 
     IDictionary& operator=(const IDictionary& other) {
-        if (this != other) {
+        if (this != &other) {
             size = other.size;
             capacity = other.capacity;
             maxLoadFactor = other.maxLoadFactor;
@@ -207,7 +206,7 @@ public:
     }
 
     IDictionary& operator=(IDictionary&& other) noexcept {
-        if (this != other) {
+        if (this != &other) {
             size = other.size;
             capacity = other.capacity;
             maxLoadFactor = other.maxLoadFactor;
