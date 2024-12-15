@@ -14,6 +14,7 @@ class IDictionary final {
 
         Slot(const TKey& key, const TElement& element, const size_t distance, const bool occupied) :
             key(key), element(element), distance(distance), occupied(occupied) {}
+
         Slot(TKey&& key, TElement&& element, const size_t distance, const bool occupied) :
             key(std::move(key)), element(std::move(element)), distance(distance), occupied(occupied) {}
     };
@@ -42,8 +43,14 @@ public:
     explicit IDictionary(const size_t capacity = 16, const float maxLoadFactor = 0.9) :
         size(0), capacity(capacity), maxLoadFactor(maxLoadFactor) {}
 
-    // copy ctor
-    // move ctor
+    IDictionary(const IDictionary& other) :
+        table(other.table), size(other.size), capacity(other.capacity), maxLoadFactor(other.maxLoadFactor) {}
+
+    IDictionary(IDictionary&& other) noexcept :
+        table(std::move(other.table)), size(other.size), capacity(other.capacity), maxLoadFactor(other.maxLoadFactor) {
+        other.size = 0;
+        other.capacity = 0;
+    }
 
     void Insert(const TKey& key, const TElement& element) {
         if (static_cast<float>(size) / capacity > maxLoadFactor) {
@@ -78,7 +85,7 @@ public:
         }
     };
 
-    TElement& Get(const TKey& key){
+    TElement& Get(const TKey& key) {
         size_t index = Hash(key);
         size_t distance = 0;
 
@@ -128,7 +135,16 @@ public:
             index = nextIndex;
             nextIndex = (index + 1) % capacity;
         }
-    };
+    }
+
+    bool Contains(const TKey& key) const {
+        try {
+            Get(key);
+            return true;
+        } catch (const std::runtime_error&) {
+            return false;
+        }
+    }
 
     size_t GetCount() const { return size; }
 
@@ -180,9 +196,37 @@ public:
 
     Iterator end() { return Iterator(table.end(), table.end()); }
 
-    // copy assignment operator
+    IDictionary& operator=(const IDictionary& other) {
+        if (this != other) {
+            size = other.size;
+            capacity = other.capacity;
+            maxLoadFactor = other.maxLoadFactor;
+            table = other.table;
+        }
+        return *this;
+    }
 
-    // move assignment operator
+    IDictionary& operator=(IDictionary&& other) noexcept {
+        if (this != other) {
+            size = other.size;
+            capacity = other.capacity;
+            maxLoadFactor = other.maxLoadFactor;
+            table = std::move(other.table);
+            other.size = 0;
+            other.capacity = 0;
+        }
+        return *this;
+    }
+
+    bool operator==(const IDictionary& other) const {
+        return size == other.size && capacity == other.capacity && maxLoadFactor == other.maxLoadFactor &&
+               table == other.table;
+    }
+
+    bool operator!=(const IDictionary& other) const {
+        return size != other.size || capacity != other.capacity || maxLoadFactor != other.maxLoadFactor ||
+               table != other.table;
+    }
 
     ~IDictionary() = default;
 };
