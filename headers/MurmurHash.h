@@ -62,7 +62,7 @@ template<String T>
 struct MurmurHash<T> {
     size_t operator()(const T& key) const {
         size_t hash = 0xc70f6907UL;
-        const char* data = sameAsValue<T, std::string> ? key.c_str() : key;
+        const char* data = key.c_str();
         const size_t length = std::strlen(data);
 
         for (std::size_t i = 0; i < length; ++i) {

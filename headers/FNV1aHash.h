@@ -49,7 +49,7 @@ template<String T>
 struct FNV1a<T> {
     size_t operator()(const T& key) const {
         size_t hash = 0xcbf29ce484222325UL;
-        const char* data = sameAsValue<T, std::string> ? key.c_str() : key;
+        const char* data = key.c_str();
 
         while (*data) {
             hash ^= static_cast<size_t>(*data++);
