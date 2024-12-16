@@ -19,6 +19,18 @@ concept EqualityComparable = requires(T a, T b) {
 };
 
 template<typename T>
+concept TotallyOrdered = EqualityComparable<T> && requires(T a, T b) {
+    { a < b } -> ConvertibleTo<bool>;
+    { b < a } -> ConvertibleTo<bool>;
+    { a <= b } -> ConvertibleTo<bool>;
+    { b <= a } -> ConvertibleTo<bool>;
+    { a >= b } -> ConvertibleTo<bool>;
+    { b >= a } -> ConvertibleTo<bool>;
+    { a > b } -> ConvertibleTo<bool>;
+    { b > a } -> ConvertibleTo<bool>;
+};
+
+template<typename T>
 concept Integer = isIntegralValue<T>;
 
 template<typename T>
