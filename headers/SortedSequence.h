@@ -1,8 +1,5 @@
 #ifndef SORTEDSEQUENCE_H
 #define SORTEDSEQUENCE_H
-#include <iostream>
-
-
 #include "../../sequences/arraySequence.h"
 
 template<typename T>
@@ -112,8 +109,12 @@ public:
 
     size_t GetSize() const { return size; }
 
-    void Add(const T& value) {
-        root = Insert(std::move(root), value);
+    void Add(const T& value) { root = Insert(std::move(root), value); }
+
+    T Get(size_t index) const {
+        ArraySequence<T> elements;
+        InOrderTraversal(root.get(), elements);
+        return elements[index];
     }
 
     SortedSequence& operator=(const SortedSequence& other) {
@@ -132,6 +133,99 @@ public:
         }
         return *this;
     }
+
+    T& operator[](size_t index) {
+        ArraySequence<T> elements;
+        InOrderTraversal(root.get(), elements);
+        return elements[index];
+    }
+
+    const T& operator[](size_t index) const {
+        ArraySequence<T> elements;
+        InOrderTraversal(root.get(), elements);
+        return elements[index];
+    }
+
+    class Iterator {
+        ArraySequence<T> elements;
+        size_t index;
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = T*;
+        using reference = T&;
+
+    public:
+        Iterator(const SortedSequence& seq, const size_t index) : elements(), index(index) {
+            seq.InOrderTraversal(seq.root.get(), elements);
+        }
+
+        reference operator*() { return elements[index]; }
+
+        Iterator& operator++() {
+            ++index;
+            return *this;
+        }
+
+        Iterator operator++(int) {
+            Iterator temp = *this;
+            ++index;
+            return temp;
+        }
+
+        Iterator& operator--() {
+            --index;
+            return *this;
+        }
+
+        Iterator operator--(int) {
+            Iterator temp = *this;
+            --index;
+            return temp;
+        }
+
+        bool operator==(const Iterator& other) const { return index == other.index; }
+
+        bool operator!=(const Iterator& other) const { return index != other.index; }
+
+        bool operator<(const Iterator& other) const { return index < other.index; }
+
+        bool operator>(const Iterator& other) const { return index > other.index; }
+
+        bool operator<=(const Iterator& other) const { return index <= other.index; }
+
+        bool operator>=(const Iterator& other) const { return index >= other.index; }
+
+        Iterator& operator+=(const size_t n) {
+            index += n;
+            return *this;
+        }
+
+        Iterator operator+(const size_t n) const {
+            Iterator temp = *this;
+            temp.index += n;
+            return temp;
+        }
+
+        Iterator& operator-=(const size_t n) {
+            index -= n;
+            return *this;
+        }
+
+        Iterator operator-(const size_t n) const {
+            Iterator temp = *this;
+            temp.index -= n;
+            return temp;
+        }
+
+        size_t operator-(const Iterator& other) const { return index - other.index; }
+    };
+
+    Iterator begin() const { return Iterator(*this, 0); }
+
+    Iterator end() const { return Iterator(*this, size); }
+
+    ~SortedSequence() = default;
 };
 
 #endif // SORTEDSEQUENCE_H
