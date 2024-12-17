@@ -117,6 +117,8 @@ public:
         return elements[index];
     }
 
+    bool IsEmpty() const { return size == 0; }
+
     SortedSequence& operator=(const SortedSequence& other) {
         if (this != &other) {
             root = Copy(other.root.get());
