@@ -42,4 +42,7 @@ concept Pointer = isPointerValue<T>;
 template<typename T>
 concept String = (sameAsValue<T, std::string> || sameAsValue<T, const char*>);
 
+template<typename T>
+concept Numerical = Integer<T> || FloatingPoint<T>;
+
 #endif // CONCEPTS_H
