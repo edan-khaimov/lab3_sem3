@@ -176,7 +176,7 @@ public:
 
         reference operator*() const { return *current; }
 
-        pointer operator->() const { return &(*current); }
+        pointer operator->() const { return &*current; }
 
         Iterator& operator++() {
             ++current;
