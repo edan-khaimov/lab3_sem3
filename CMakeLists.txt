@@ -11,4 +11,6 @@ add_executable(lab3 main.cpp
         headers/IDictionary.h
         headers/MostFrequentSubsequences.h
         source/MostFrequentSubsequences.cpp
+        headers/Histogram.h
+        headers/SortedSequence.h
 )

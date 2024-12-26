@@ -81,7 +81,7 @@ public:
         ++size;
     }
 
-    TElement& Get(const TKey& key) {
+    TElement Get(const TKey& key) const {
         size_t index = Hash(key);
         size_t distance = 0;
 
@@ -229,6 +229,25 @@ public:
     bool operator!=(const IDictionary& other) const {
         return size != other.size || capacity != other.capacity || maxLoadFactor != other.maxLoadFactor ||
                table != other.table;
+    }
+
+    TElement& operator[](const TKey& key) {
+        size_t index = Hash(key);
+        size_t distance = 0;
+
+        while (table[index].occupied) {
+            if (table[index].key == key) {
+                return table[index].element;
+            }
+
+            if (distance > table[index].distance) {
+                throw std::runtime_error("Key not found");
+            }
+
+            ++distance;
+            index = (index + 1) % capacity;
+        }
+        throw std::runtime_error("Key not found");
     }
 
     ~IDictionary() = default;

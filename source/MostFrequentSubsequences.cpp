@@ -12,7 +12,7 @@ IDictionary<std::string, size_t, FNV1a<std::string>> createPrefixTable(const std
     for (size_t start = 0; start < n; ++start) {
         for (size_t len = lmin; len <= lmax && start + len <= n; ++len) {
             if (std::string substr = str.substr(start, len); table.Contains(substr)) {
-                ++table.Get(substr);
+                ++table[substr];
             } else {
                 table.Insert(substr, 1);
             }

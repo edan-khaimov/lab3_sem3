@@ -136,11 +136,6 @@ public:
         return *this;
     }
 
-    T& operator[](size_t index) {
-        ArraySequence<T> elements;
-        InOrderTraversal(root.get(), elements);
-        return elements[index];
-    }
 
     const T& operator[](size_t index) const {
         ArraySequence<T> elements;
