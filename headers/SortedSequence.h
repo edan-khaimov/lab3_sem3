@@ -91,7 +91,7 @@ class SortedSequence final {
 
     UniquePtr<AVLNode<T>> Copy(const AVLNode<T>* node) {
         if (!node) {
-            return nullptr;
+            return UniquePtr<AVLNode<T>>(nullptr);
         }
         auto newNode = makeUnique<AVLNode<T>>(node->value);
         newNode->left = Copy(node->left.get());
