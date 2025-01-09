@@ -215,12 +215,95 @@ public:
             return temp;
         }
 
-        size_t operator-(const Iterator& other) const { return index - other.index; }
+        difference_type operator-(const Iterator& other) const { return index - other.index; }
     };
 
-    Iterator begin() const { return Iterator(*this, 0); }
+    Iterator begin() { return Iterator(*this, 0); }
 
-    Iterator end() const { return Iterator(*this, size); }
+    Iterator end() { return Iterator(*this, size); }
+
+    class ConstIterator {
+        const ArraySequence<T> elements;
+        size_t index;
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = const T*;
+        using reference = const T&;
+
+    public:
+        ConstIterator(const SortedSequence& seq, const size_t index) : elements(), index(index) {
+            seq.InOrderTraversal(seq.root.get(), elements);
+        }
+
+        reference operator*() const { return elements[index]; }
+
+        pointer operator->() const { return &elements[index]; }
+
+        ConstIterator& operator++() {
+            ++index;
+            return *this;
+        }
+
+        ConstIterator operator++(int) {
+            ConstIterator temp = *this;
+            ++index;
+            return temp;
+        }
+
+        ConstIterator& operator--() {
+            --index;
+            return *this;
+        }
+
+        ConstIterator operator--(int) {
+            ConstIterator temp = *this;
+            --index;
+            return temp;
+        }
+
+        ConstIterator operator+(const size_t n) const {
+            ConstIterator temp = *this;
+            temp.index += n;
+            return temp;
+        }
+
+        ConstIterator operator-(const size_t n) const {
+            ConstIterator temp = *this;
+            temp.index -= n;
+            return temp;
+        }
+
+        difference_type operator-(const ConstIterator& other) const {
+            return static_cast<difference_type>(index) - static_cast<difference_type>(other.index);
+        }
+
+        ConstIterator& operator+=(const size_t n) {
+            index += n;
+            return *this;
+        }
+
+        ConstIterator& operator-=(const size_t n) {
+            index -= n;
+            return *this;
+        }
+
+        bool operator==(const ConstIterator& other) const { return index == other.index; }
+
+        bool operator!=(const ConstIterator& other) const { return index != other.index; }
+
+        bool operator<(const ConstIterator& other) const { return index < other.index; }
+
+        bool operator>(const ConstIterator& other) const { return index > other.index; }
+
+        bool operator<=(const ConstIterator& other) const { return index <= other.index; }
+
+        bool operator>=(const ConstIterator& other) const { return index >= other.index; }
+    };
+
+    ConstIterator begin() const { return ConstIterator(*this, 0); }
+
+    ConstIterator end() const { return ConstIterator(*this, size); }
 
     ~SortedSequence() = default;
 };
