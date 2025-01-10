@@ -3,22 +3,23 @@
 #include "../../sequences/arraySequence.h"
 #include "Concepts.h"
 
+#include <utility>
+
 template<typename TKey, typename TElement, typename Hasher = std::hash<TKey>>
     requires Hashable<TKey, Hasher> && EqualityComparable<TKey>
 class IDictionary final {
     struct Entry {
-        TKey key;
-        TElement element;
+        std::pair<TKey, TElement> keyValue;
         size_t distance = 0;
         bool occupied = false;
 
         Entry() = default;
 
-        Entry(const TKey& key, const TElement& element, const size_t distance, const bool occupied) :
-            key(key), element(element), distance(distance), occupied(occupied) {}
+        Entry(const std::pair<TKey, TElement>& keyValue, const size_t distance, const bool occupied) :
+            keyValue(keyValue), distance(distance), occupied(occupied) {}
 
-        Entry(TKey&& key, TElement&& element, const size_t distance, const bool occupied) :
-            key(std::move(key)), element(std::move(element)), distance(distance), occupied(occupied) {}
+        Entry(std::pair<TKey, TElement>&& keyValue, const size_t distance, const bool occupied) :
+            keyValue(std::move(keyValue)), distance(distance), occupied(occupied) {}
     };
 
     ArraySequence<Entry> table;
@@ -36,7 +37,7 @@ class IDictionary final {
 
         for (auto& slot: oldTable) {
             if (slot.occupied) {
-                Insert(slot.key, slot.element);
+                Insert(slot.keyValue.first, slot.keyValue.second);
             }
         }
     }
@@ -61,11 +62,11 @@ public:
 
         size_t index = Hash(key);
 
-        Entry newEntry = {key, element, 0, true};
+        Entry newEntry = {{key, element}, 0, true};
 
         while (table[index].occupied) {
-            if (newEntry.key == table[index].key) {
-                table[index].element = newEntry.element;
+            if (newEntry.keyValue.first == table[index].keyValue.first) {
+                table[index].keyValue.second = newEntry.keyValue.second;
                 return;
             }
 
@@ -86,8 +87,8 @@ public:
         size_t distance = 0;
 
         while (table[index].occupied) {
-            if (table[index].key == key) {
-                return table[index].element;
+            if (table[index].keyValue.first == key) {
+                return table[index].keyValue.second;
             }
 
             if (distance > table[index].distance) {
@@ -105,7 +106,7 @@ public:
         size_t distance = 0;
 
         while (table[index].occupied) {
-            if (table[index].key == key) {
+            if (table[index].keyValue.first == key) {
                 table[index].occupied = false;
                 size_t nextIndex = (index + 1) % capacity;
                 while (table[nextIndex].occupied && table[nextIndex].distance > 0) {
@@ -133,7 +134,7 @@ public:
         size_t distance = 0;
 
         while (table[index].occupied) {
-            if (table[index].key == key) {
+            if (table[index].keyValue.first == key) {
                 return true;
             }
 
@@ -164,7 +165,7 @@ public:
 
     public:
         using iterator_category = std::forward_iterator_tag;
-        using value_type = Entry;
+        using value_type = std::pair<TKey, TElement>;
         using difference_type = std::ptrdiff_t;
         using pointer = value_type*;
         using reference = value_type&;
@@ -174,9 +175,9 @@ public:
             skipEmpty();
         }
 
-        reference operator*() const { return *current; }
+        reference operator*() const { return current->keyValue; }
 
-        pointer operator->() const { return &*current; }
+        pointer operator->() const { return &current->keyValue; }
 
         Iterator& operator++() {
             ++current;
@@ -194,6 +195,7 @@ public:
 
         bool operator!=(const Iterator& other) const { return current != other.current; }
     };
+
 
     Iterator begin() { return Iterator(table.begin(), table.end()); }
 
@@ -236,8 +238,8 @@ public:
         size_t distance = 0;
 
         while (table[index].occupied) {
-            if (table[index].key == key) {
-                return table[index].element;
+            if (table[index].keyValue.first == key) {
+                return table[index].keyValue.second;
             }
 
             if (distance > table[index].distance) {
