@@ -68,7 +68,7 @@ class Histogram final {
     using Range = std::pair<int, int>;
     IDictionary<Range, Partition> partitions;
 
-    Statistics CalculateStatisticsForField(ArraySequence<int>& sequence) {
+    static Statistics CalculateStatisticsForField(ArraySequence<int>& sequence) {
         double median, mean = 0.0, variance = 0.0;
         QuickSorter<int> sorter;
         sorter.Sort(sequence, ascendingComparator);

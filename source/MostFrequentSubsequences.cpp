@@ -21,3 +21,26 @@ IDictionary<std::string, size_t, FNV1a<std::string>> createPrefixTable(const std
 
     return table;
 }
+
+void processFileAndSaveResults(const std::string& inputFile, const std::string& outputFile, size_t lmin, size_t lmax) {
+    std::ifstream inFile(inputFile);
+    if (!inFile) {
+        throw std::runtime_error("Failed to open input file.");
+    }
+
+    std::string content((std::istreambuf_iterator(inFile)), std::istreambuf_iterator<char>());
+    inFile.close();
+
+    IDictionary<std::string, size_t, FNV1a<std::string>> prefixTable = std::move(createPrefixTable(content, lmin, lmax));
+
+    std::ofstream outFile(outputFile);
+    if (!outFile) {
+        throw std::runtime_error("Failed to open output file.");
+    }
+
+    for (const auto& [key, value] : prefixTable) {
+        outFile << key << " - " << value << std::endl;
+    }
+
+    outFile.close();
+}
