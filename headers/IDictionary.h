@@ -5,20 +5,20 @@
 
 #include <utility>
 
-template<typename TKey, typename TElement, typename Hasher = std::hash<TKey>>
+template<typename TKey, typename TValue, typename Hasher = std::hash<TKey>>
     requires Hashable<TKey, Hasher> && EqualityComparable<TKey>
 class IDictionary final {
     struct Entry {
-        std::pair<TKey, TElement> keyValue;
+        std::pair<TKey, TValue> keyValue;
         size_t distance = 0;
         bool occupied = false;
 
         Entry() = default;
 
-        Entry(const std::pair<TKey, TElement>& keyValue, const size_t distance, const bool occupied) :
+        Entry(const std::pair<TKey, TValue>& keyValue, const size_t distance, const bool occupied) :
             keyValue(keyValue), distance(distance), occupied(occupied) {}
 
-        Entry(std::pair<TKey, TElement>&& keyValue, const size_t distance, const bool occupied) :
+        Entry(std::pair<TKey, TValue>&& keyValue, const size_t distance, const bool occupied) :
             keyValue(std::move(keyValue)), distance(distance), occupied(occupied) {}
     };
 
@@ -55,14 +55,14 @@ public:
         other.capacity = 0;
     }
 
-    void Insert(const TKey& key, const TElement& element) {
+    void Insert(const TKey& key, const TValue& value) {
         if (static_cast<float>(size) / capacity > maxLoadFactor) {
             Rehash();
         }
 
         size_t index = Hash(key);
 
-        Entry newEntry = {{key, element}, 0, true};
+        Entry newEntry = {{key, value}, 0, true};
 
         while (table[index].occupied) {
             if (newEntry.keyValue.first == table[index].keyValue.first) {
@@ -82,7 +82,7 @@ public:
         ++size;
     }
 
-    TElement Get(const TKey& key) const {
+    TValue Get(const TKey& key) const {
         size_t index = Hash(key);
         size_t distance = 0;
 
@@ -165,7 +165,7 @@ public:
 
     public:
         using iterator_category = std::forward_iterator_tag;
-        using value_type = std::pair<TKey, TElement>;
+        using value_type = std::pair<TKey, TValue>;
         using difference_type = std::ptrdiff_t;
         using pointer = value_type*;
         using reference = value_type&;
@@ -233,7 +233,7 @@ public:
                table != other.table;
     }
 
-    TElement& operator[](const TKey& key) {
+    TValue& operator[](const TKey& key) {
         size_t index = Hash(key);
         size_t distance = 0;
 
