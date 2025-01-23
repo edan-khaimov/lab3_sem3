@@ -1,5 +1,7 @@
 #include "../headers/MostFrequentSubsequences.h"
 
+#include <filesystem>
+
 IDictionary<std::string, size_t, FNV1a<std::string>> createPrefixTable(const std::string& str, const size_t lmin,
                                                                        const size_t lmax) {
     IDictionary<std::string, size_t, FNV1a<std::string>> table;
@@ -22,7 +24,8 @@ IDictionary<std::string, size_t, FNV1a<std::string>> createPrefixTable(const std
     return table;
 }
 
-void processFileAndSaveResults(const std::string& inputFile, const std::string& outputFile, size_t lmin, size_t lmax) {
+void processFileAndSaveResults(const std::string& inputFile, const std::string& outputDirectory, size_t lmin,
+                               size_t lmax) {
     std::ifstream inFile(inputFile);
     if (!inFile) {
         throw std::runtime_error("Failed to open input file.");
@@ -31,14 +34,22 @@ void processFileAndSaveResults(const std::string& inputFile, const std::string& 
     std::string content((std::istreambuf_iterator(inFile)), std::istreambuf_iterator<char>());
     inFile.close();
 
-    IDictionary<std::string, size_t, FNV1a<std::string>> prefixTable = std::move(createPrefixTable(content, lmin, lmax));
+    IDictionary<std::string, size_t, FNV1a<std::string>> prefixTable =
+            std::move(createPrefixTable(content, lmin, lmax));
 
-    std::ofstream outFile(outputFile);
+    std::filesystem::path outputPath(outputDirectory);
+    if (!exists(outputPath)) {
+        create_directories(outputPath);
+    }
+
+    std::filesystem::path resultFile = outputPath / "result.txt";
+
+    std::ofstream outFile(resultFile);
     if (!outFile) {
         throw std::runtime_error("Failed to open output file.");
     }
 
-    for (const auto& [key, value] : prefixTable) {
+    for (const auto& [key, value]: prefixTable) {
         outFile << key << " - " << value << std::endl;
     }
 

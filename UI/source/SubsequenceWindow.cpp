@@ -118,6 +118,6 @@ void SubsequenceWindow::processSubsequences() {
         return;
     }
 
-    // Здесь вызывается ваша логика анализа подпоследовательностей
+    processFileAndSaveResults(filePath.toStdString(), saveLocation.toStdString(), lmin, lmax);
     QMessageBox::information(this, "Готово", "Данные успешно обработаны и сохранены!");
 }
