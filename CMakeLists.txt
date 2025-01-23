@@ -23,6 +23,8 @@ add_executable(lab3 main.cpp
         UI/source/MainWindow.cpp
         UI/headers/SubsequenceWindow.h
         UI/source/SubsequenceWindow.cpp
+        UI/headers/HistogramWindow.h
+        UI/source/HistogramWindow.cpp
 )
 
 target_link_libraries(lab3 PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets)

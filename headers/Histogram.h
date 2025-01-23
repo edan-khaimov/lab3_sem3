@@ -33,12 +33,14 @@ struct Partition {
         genders.Insert("Женщина", 0);
         educations.Insert("Основное общее", 0);
         educations.Insert("Среднее общее", 0);
+        educations.Insert("Среднее профессиональное", 0);
         educations.Insert("Бакалавриат", 0);
         educations.Insert("Магистратура", 0);
         educations.Insert("Аспирантура", 0);
         maritalStatuses.Insert("В браке", 0);
         maritalStatuses.Insert("Не в браке", 0);
         maritalStatuses.Insert("В разводе", 0);
+        maritalStatuses.Insert("Вдова/вдовец", 0);
     };
 };
 

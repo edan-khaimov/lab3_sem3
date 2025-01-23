@@ -1,5 +1,6 @@
-#include "..//headers/MainWindow.h"
+#include "../headers/MainWindow.h"
 #include "../headers/SubsequenceWindow.h"
+#include "../headers/HistogramWindow.h" // Подключаем заголовочный файл окна гистограмм
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), histogramButton(new QPushButton("Гистограммы", this)),
@@ -40,7 +41,13 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow() = default;
 
 void MainWindow::openHistogramWindow() {
-    // Здесь может быть переход к окну гистограмм
+    histogramButton->hide();
+    subsequenceButton->hide();
+
+    // Переход к окну гистограмм
+    auto *window = new HistogramWindow(this);
+    window->setAttribute(Qt::WA_DeleteOnClose); // Уничтожить окно при закрытии
+    window->show();
 }
 
 void MainWindow::openSubsequenceWindow() {
