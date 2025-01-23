@@ -20,14 +20,14 @@ public:
     void processSubsequences();
 
 private:
-    QLineEdit *filePathField;          // Поле для ввода пути к файлу
-    QSpinBox *lminSpinBox;             // Поле для ввода значения lmin
-    QSpinBox *lmaxSpinBox;             // Поле для ввода значения lmax
-    QLineEdit *saveLocationField;      // Поле для выбора пути сохранения
-    QPushButton *loadFileButton;       // Кнопка для загрузки файла
-    QPushButton *chooseSaveButton;     // Кнопка для выбора папки сохранения
-    QPushButton *processButton;        // Кнопка для обработки данных
-    QLabel *statusLabel;               // Метка для отображения статуса
+    QLineEdit *filePathField;
+    QSpinBox *lminSpinBox;
+    QSpinBox *lmaxSpinBox;
+    QLineEdit *saveLocationField;
+    QPushButton *loadFileButton;
+    QPushButton *chooseSaveButton;
+    QPushButton *processButton;
+    QLabel *statusLabel;
 };
 
 #endif // SUBSEQUENCEWINDOW_H

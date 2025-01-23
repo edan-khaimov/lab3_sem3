@@ -15,17 +15,14 @@ SubsequenceWindow::SubsequenceWindow(QWidget *parent)
     setWindowTitle("Поиск наиболее частых подпоследовательностей");
     resize(800, 600);
 
-    // Установка диапазонов
     lminSpinBox->setRange(1, 1000);
     lmaxSpinBox->setRange(1, 1000);
     lminSpinBox->setValue(1);
     lmaxSpinBox->setValue(10);
 
-    // Убираем кнопки ручного сдвига
     lminSpinBox->setButtonSymbols(QAbstractSpinBox::NoButtons);
     lmaxSpinBox->setButtonSymbols(QAbstractSpinBox::NoButtons);
 
-    // Применение стилей
     setStyleSheet(R"(
         QWidget {
             background-color: #f9f9f9;

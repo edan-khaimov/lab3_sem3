@@ -40,7 +40,7 @@ struct Partition {
         maritalStatuses.Insert("В браке", 0);
         maritalStatuses.Insert("Не в браке", 0);
         maritalStatuses.Insert("В разводе", 0);
-        maritalStatuses.Insert("Вдова/вдовец", 0);
+        maritalStatuses.Insert("Вдовец/Вдова", 0);
     };
 };
 
@@ -69,10 +69,8 @@ class Histogram final {
     using Range = std::pair<int, int>;
     IDictionary<Range, Partition> partitions;
 
-    static Statistics CalculateStatisticsForField(ArraySequence<int>& sequence) {
+    static Statistics CalculateStatisticsForField(const ArraySequence<int>& sequence) {
         double median, mean = 0.0, variance = 0.0;
-        QuickSorter<int> sorter;
-        sorter.Sort(sequence, ascendingComparator);
 
         size_t n = sequence.GetLength();
         if (n % 2 == 0) {
@@ -94,27 +92,20 @@ class Histogram final {
 
         return {median, mean, variance};
     }
-    /*
-        PartitionStatistics calculateStatisticsForPartitions() {
-            for (auto& [key, value]: partitions) {
-                CalculateStatisticsForField(partition..ages);
-                CalculateStatisticsForField(partition.element.weights);
-                CalculateStatisticsForField(partition.element.heights);
-                CalculateStatisticsForField(partition.element.salaries);
-            }
-        }
-    */
+
     Range getRange(const int field, const ArraySequence<Range>& ranges) {
         for (const auto& range: ranges) {
             if (field >= range.first && field <= range.second) {
                 return range;
             }
         }
-        return {};
+        return {-1, -1};
     }
 
 public:
-    Histogram(const ArraySequence<Person>& persons, const ArraySequence<Range>& ranges,
+    Histogram() = default;
+
+    void Build(const ArraySequence<Person>& persons, const ArraySequence<Range>& ranges,
               const std::function<int(const Person&)>& field) {
         for (const auto& range: ranges) {
             partitions.Insert(range, Partition());
@@ -123,18 +114,44 @@ public:
         for (const auto& person: persons) {
             const int partitionField = field(person);
             Range range = std::move(getRange(partitionField, ranges));
-            Partition& partition = partitions[range];
-            partition.ages.Append(person.getAge());
-            partition.weights.Append(person.getWeight());
-            partition.heights.Append(person.getHeight());
-            partition.salaries.Append(person.getSalary());
-            ++partition.genders[person.getGender()];
-            ++partition.educations[person.getEducation()];
-            ++partition.maritalStatuses[person.getMaritalStatus()];
+            if (range.first != -1 && range.second != -1) {
+                Partition& partition = partitions[range];
+                partition.ages.Append(person.getAge());
+                partition.weights.Append(person.getWeight());
+                partition.heights.Append(person.getHeight());
+                partition.salaries.Append(person.getSalary());
+                ++partition.genders[person.getGender()];
+                ++partition.educations[person.getEducation()];
+                ++partition.maritalStatuses[person.getMaritalStatus()];
+            }
+        }
+
+        QuickSorter<int> sorter;
+        for (auto& [range, partition]: partitions) {
+            sorter.Sort(partition.ages, ascendingComparator);
+            sorter.Sort(partition.weights, ascendingComparator);
+            sorter.Sort(partition.heights, ascendingComparator);
+            sorter.Sort(partition.salaries, ascendingComparator);
         }
     }
 
-    IDictionary<Range, Statistics> getStatistics() { IDictionary<Range, PartitionStatistics> result; }
+    IDictionary<Range, PartitionStatistics> GetStatistics() {
+        IDictionary<Range, PartitionStatistics> result;
+
+        for (const auto& [range, partition]: partitions) {
+            PartitionStatistics stats;
+            stats.ages = CalculateStatisticsForField(partition.ages);
+            stats.weights = CalculateStatisticsForField(partition.weights);
+            stats.heights = CalculateStatisticsForField(partition.heights);
+            stats.salaries = CalculateStatisticsForField(partition.salaries);
+            stats.genders = partition.genders;
+            stats.educations = partition.educations;
+            stats.maritalStatuses = partition.maritalStatuses;
+            result.Insert(range, stats);
+        }
+
+        return result;
+    }
 
     ~Histogram() = default;
 };

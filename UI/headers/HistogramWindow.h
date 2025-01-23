@@ -1,14 +1,16 @@
 #ifndef HISTOGRAMWINDOW_H
 #define HISTOGRAMWINDOW_H
 
-#include <QWidget>
-#include <QLineEdit>
 #include <QComboBox>
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QListWidget>
 #include <QPushButton>
 #include <QTableWidget>
-#include <QListWidget>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
+#include <QWidget>
+
+#include "../../../sequences/arraySequence.h"
 
 class HistogramWindow : public QWidget {
     Q_OBJECT
@@ -24,7 +26,7 @@ public:
 
 private:
     void applyStyles();
-    void createTableHeaders();
+    void createTableHeaders() const;
     QStringList getRanges() const;
 
     QLineEdit *filePathEdit;
@@ -37,6 +39,7 @@ private:
     QPushButton *selectFileButton;
     QPushButton *generateTableButton;
     QVBoxLayout *mainLayout;
+    ArraySequence<std::pair<int, int>> rangesArray;
 };
 
 #endif // HISTOGRAMWINDOW_H

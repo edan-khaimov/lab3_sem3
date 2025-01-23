@@ -1,11 +1,7 @@
-#include <iostream>
-#include <string>
-
-#include <unordered_map>
-#include "headers/Histogram.h"
-#include "headers/MostFrequentSubsequences.h"
 #include <QApplication>
+#include <iostream>
 #include "UI/headers/MainWindow.h"
+#include "headers/Histogram.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);

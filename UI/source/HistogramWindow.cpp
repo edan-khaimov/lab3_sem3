@@ -1,9 +1,14 @@
-#include "../headers/HistogramWindow.h"
 #include <QFileDialog>
-#include <QMessageBox>
 #include <QHeaderView>
-#include <cstdlib> // Для std::rand() и std::srand()
-#include <ctime>   // Для std::time()
+#include <QMessageBox>
+#include <cstdlib>
+#include <ctime>
+#include <fstream>
+#include <iostream>
+
+#include "../headers/HistogramWindow.h"
+#include "../../headers/Histogram.h"
+#include "../../../sorting/Person.h"
 
 HistogramWindow::HistogramWindow(QWidget *parent)
     : QWidget(parent),
@@ -104,15 +109,15 @@ void HistogramWindow::applyStyles() {
     )");
 }
 
-void HistogramWindow::createTableHeaders() {
+void HistogramWindow::createTableHeaders() const {
     QStringList headers = {
         "Разбиение", "Медиана (Возраст)", "Дисперсия (Возраст)", "Среднее (Возраст)",
         "Медиана (Рост)", "Дисперсия (Рост)", "Среднее (Рост)",
         "Медиана (Вес)", "Дисперсия (Вес)", "Среднее (Вес)",
         "Медиана (Зарплата)", "Дисперсия (Зарплата)", "Среднее (Зарплата)",
-        "Мужской", "Женский",
-        "В браке", "Не в браке", "Разведён", "Вдовец/Вдова",
-        "Основное общее", "Среднее общее", "Бакалавриат", "Магистратура", "Аспирантура", "Среднее профессиональное"
+        "Мужчина", "Женщина",
+        "В браке", "Не в браке", "В разводе", "Вдовец/Вдова",
+        "Основное общее", "Среднее общее", "Среднее профессиональное", "Бакалавриат", "Магистратура", "Аспирантура"
     };
 
     resultTable->setColumnCount(headers.size());
@@ -120,9 +125,6 @@ void HistogramWindow::createTableHeaders() {
     resultTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     resultTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 }
-
-// Остальные функции остаются без изменений.
-
 
 QStringList HistogramWindow::getRanges() const {
     QStringList ranges;
@@ -144,6 +146,7 @@ void HistogramWindow::addRange() {
 
     QString rangeText = QString("От %1 до %2").arg(start).arg(end);
     rangeList->addItem(rangeText);
+    rangesArray.Append({start, end});
 }
 
 void HistogramWindow::openFileDialog() {
@@ -156,16 +159,102 @@ void HistogramWindow::openFileDialog() {
 void HistogramWindow::generateTable() {
     QStringList ranges = getRanges();
     QString filePath = filePathEdit->text();
+    QString parameter = splitParameterComboBox->currentText();
+
     if (ranges.isEmpty() || filePath.isEmpty()) {
         QMessageBox::warning(this, "Ошибка", "Выберите файл и добавьте хотя бы одно разбиение.");
         return;
     }
 
+    ArraySequence<Person> persons;
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+    Person person;
+    std::ifstream file(filePath.toStdString());
+
+    if (!file.is_open()) {
+        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл.");
+        return;
+    }
+
+    std::string line;
+    std::getline(file, line);
+
+    while (std::getline(file, line)) {
+        std::stringstream stream(line);
+        std::string tmp;
+
+        std::getline(stream, tmp, ',');
+        person.setSurname(tmp);
+        std::getline(stream, tmp, ',');
+        person.setName(tmp);
+        std::getline(stream, tmp, ',');
+        person.setPatronymic(tmp);
+        std::getline(stream, tmp, ',');
+        person.setGender(tmp);
+        std::getline(stream, tmp, ',');
+        person.setAge(std::stoi(tmp));
+        std::getline(stream, tmp, ',');
+        person.setWeight(std::stoi(tmp));
+        std::getline(stream, tmp, ',');
+        person.setHeight(std::stoi(tmp));
+        std::getline(stream, tmp, ',');
+        person.setEducation(tmp);
+        std::getline(stream, tmp, ',');
+        person.setMaritalStatus(tmp);
+        std::getline(stream, tmp, ',');
+        person.setPassportSeries(std::stoi(tmp));
+        std::getline(stream, tmp, ',');
+        person.setPassportNumber(std::stoi(tmp));
+        std::getline(stream, tmp, ',');
+        person.setSalary(std::stoi(tmp));
+
+        persons.Append(person);
+    }
+
+    file.close();
+
+    Histogram histogram;
+
+    if (parameter == "Возраст") {
+        histogram.Build(persons, rangesArray, [](const Person& p) { return p.getAge(); });
+    } else if (parameter == "Вес") {
+        histogram.Build(persons, rangesArray, [](const Person& p) { return p.getWeight(); });
+    } else if (parameter == "Рост") {
+        histogram.Build(persons, rangesArray, [](const Person& p) { return p.getHeight(); });
+    } else if (parameter == "Зарплата") {
+        histogram.Build(persons, rangesArray, [](const Person& p) { return p.getSalary(); });
+    }
+
+    auto data = std::move(histogram.GetStatistics());
+
     for (int i = 0; i < ranges.size(); ++i) {
+        auto& partition = data[rangesArray[i]];
         resultTable->insertRow(i);
         resultTable->setItem(i, 0, new QTableWidgetItem(ranges[i]));
-        for (int j = 1; j < resultTable->columnCount(); ++j) {
-            resultTable->setItem(i, j, new QTableWidgetItem(QString::number(std::rand() % 100)));
-        }
+        resultTable->setItem(i, 1, new QTableWidgetItem(QString::number(partition.ages.median)));
+        resultTable->setItem(i, 2, new QTableWidgetItem(QString::number(partition.ages.variance)));
+        resultTable->setItem(i, 3, new QTableWidgetItem(QString::number(partition.ages.mean)));
+        resultTable->setItem(i, 4, new QTableWidgetItem(QString::number(partition.heights.median)));
+        resultTable->setItem(i, 5, new QTableWidgetItem(QString::number(partition.heights.variance)));
+        resultTable->setItem(i, 6, new QTableWidgetItem(QString::number(partition.heights.mean)));
+        resultTable->setItem(i, 7, new QTableWidgetItem(QString::number(partition.weights.median)));
+        resultTable->setItem(i, 8, new QTableWidgetItem(QString::number(partition.weights.variance)));
+        resultTable->setItem(i, 9, new QTableWidgetItem(QString::number(partition.weights.mean)));
+        resultTable->setItem(i, 10, new QTableWidgetItem(QString::number(partition.salaries.median)));
+        resultTable->setItem(i, 11, new QTableWidgetItem(QString::number(partition.salaries.variance)));
+        resultTable->setItem(i, 12, new QTableWidgetItem(QString::number(partition.salaries.mean)));
+        resultTable->setItem(i, 13, new QTableWidgetItem(QString::number(partition.genders["Мужчина"])));
+        resultTable->setItem(i, 14, new QTableWidgetItem(QString::number(partition.genders["Женщина"])));
+        resultTable->setItem(i, 15, new QTableWidgetItem(QString::number(partition.maritalStatuses["В браке"])));
+        resultTable->setItem(i, 16, new QTableWidgetItem(QString::number(partition.maritalStatuses["Не в браке"])));
+        resultTable->setItem(i, 17, new QTableWidgetItem(QString::number(partition.maritalStatuses["В разводе"])));
+        resultTable->setItem(i, 18, new QTableWidgetItem(QString::number(partition.maritalStatuses["Вдовец/Вдова"])));
+        resultTable->setItem(i, 19, new QTableWidgetItem(QString::number(partition.educations["Основное общее"])));
+        resultTable->setItem(i, 20, new QTableWidgetItem(QString::number(partition.educations["Среднее общее"])));
+        resultTable->setItem(i, 21, new QTableWidgetItem(QString::number(partition.educations["Среднее профессиональное"])));
+        resultTable->setItem(i, 22, new QTableWidgetItem(QString::number(partition.educations["Бакалавриат"])));
+        resultTable->setItem(i, 23, new QTableWidgetItem(QString::number(partition.educations["Магистратура"])));
+        resultTable->setItem(i, 24, new QTableWidgetItem(QString::number(partition.educations["Аспирантура"])));
     }
 }
