@@ -21,7 +21,6 @@ public:
         void openFileDialog();
     void addRange();
     void generateTable();
-    void openTableInNewWindow();
 
 private:
     void applyStyles();

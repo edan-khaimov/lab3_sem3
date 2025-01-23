@@ -36,7 +36,8 @@ HistogramWindow::HistogramWindow(QWidget *parent)
     rangeLayout->addWidget(rangeEndEdit);
     rangeLayout->addWidget(addRangeButton);
 
-    // Список разбиений
+    // Список разбиений с уменьшенным размером
+    rangeList->setMaximumHeight(100); // Ограничение высоты
     auto *rangeListLayout = new QVBoxLayout();
     rangeListLayout->addWidget(rangeList);
 
@@ -97,6 +98,9 @@ void HistogramWindow::applyStyles() {
             font-weight: bold;
             border: 1px solid #dcdcdc;
         }
+        QMessageBox QLabel {
+            color: #000000; /* Черный текст ошибок */
+        }
     )");
 }
 
@@ -116,6 +120,9 @@ void HistogramWindow::createTableHeaders() {
     resultTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     resultTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 }
+
+// Остальные функции остаются без изменений.
+
 
 QStringList HistogramWindow::getRanges() const {
     QStringList ranges;
@@ -162,34 +169,3 @@ void HistogramWindow::generateTable() {
         }
     }
 }
-
-void HistogramWindow::openTableInNewWindow() {
-    auto *tableWindow = new QWidget();
-    tableWindow->setWindowTitle("Результаты");
-    tableWindow->resize(1200, 800);
-
-    auto *tableCopy = new QTableWidget(resultTable->rowCount(), resultTable->columnCount());
-    QStringList headers;
-    for (int col = 0; col < resultTable->columnCount(); ++col) {
-        headers.append(resultTable->horizontalHeaderItem(col)->text());
-    }
-    tableCopy->setHorizontalHeaderLabels(headers);
-
-    for (int i = 0; i < resultTable->rowCount(); ++i) {
-        for (int j = 0; j < resultTable->columnCount(); ++j) {
-            auto *item = resultTable->item(i, j);
-            if (item) {
-                tableCopy->setItem(i, j, new QTableWidgetItem(item->text()));
-            }
-        }
-    }
-
-    tableCopy->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    tableCopy->setStyleSheet(resultTable->styleSheet());
-
-    auto *layout = new QVBoxLayout(tableWindow);
-    layout->addWidget(tableCopy);
-    tableWindow->setLayout(layout);
-    tableWindow->show();
-}
-
