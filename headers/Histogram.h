@@ -3,9 +3,9 @@
 #include <functional>
 
 
+#include "../../sorting/DefaultComparators.h"
 #include "../../sorting/Person.h"
 #include "../../sorting/quickSort.h"
-#include "../../sorting/DefaultComparators.h"
 #include "../headers/IDictionary.h"
 
 
@@ -51,19 +51,18 @@ struct Statistics {
 
     Statistics() = default;
 
-    Statistics(double median, double mean, double variance) : median(median), mean(mean), variance(variance) {}
+    Statistics(const double median, const double mean, const double variance) :
+        median(median), mean(mean), variance(variance) {}
 };
 
 struct PartitionStatistics {
-    Statistics ages;
-    Statistics weights;
-    Statistics heights;
-    Statistics salaries;
+    Statistics ages{};
+    Statistics weights{};
+    Statistics heights{};
+    Statistics salaries{};
     IDictionary<std::string, size_t> genders;
     IDictionary<std::string, size_t> educations;
     IDictionary<std::string, size_t> maritalStatuses;
-
-
 };
 
 class Histogram final {
@@ -95,16 +94,16 @@ class Histogram final {
 
         return {median, mean, variance};
     }
-/*
-    PartitionStatistics calculateStatisticsForPartitions() {
-        for (auto& [key, value]: partitions) {
-            CalculateStatisticsForField(partition..ages);
-            CalculateStatisticsForField(partition.element.weights);
-            CalculateStatisticsForField(partition.element.heights);
-            CalculateStatisticsForField(partition.element.salaries);
+    /*
+        PartitionStatistics calculateStatisticsForPartitions() {
+            for (auto& [key, value]: partitions) {
+                CalculateStatisticsForField(partition..ages);
+                CalculateStatisticsForField(partition.element.weights);
+                CalculateStatisticsForField(partition.element.heights);
+                CalculateStatisticsForField(partition.element.salaries);
+            }
         }
-    }
-*/
+    */
     Range getRange(const int field, const ArraySequence<Range>& ranges) {
         for (const auto& range: ranges) {
             if (field >= range.first && field <= range.second) {
@@ -122,7 +121,7 @@ public:
         }
 
         for (const auto& person: persons) {
-            int partitionField = field(person);
+            const int partitionField = field(person);
             Range range = std::move(getRange(partitionField, ranges));
             Partition& partition = partitions[range];
             partition.ages.Append(person.getAge());
@@ -135,10 +134,7 @@ public:
         }
     }
 
-    IDictionary<Range, Statistics> getStatistics() {
-        IDictionary<Range, PartitionStatistics> result;
-
-    }
+    IDictionary<Range, Statistics> getStatistics() { IDictionary<Range, PartitionStatistics> result; }
 
     ~Histogram() = default;
 };
