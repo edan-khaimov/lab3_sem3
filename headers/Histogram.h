@@ -63,6 +63,7 @@ struct PartitionStatistics {
     IDictionary<std::string, size_t> genders;
     IDictionary<std::string, size_t> educations;
     IDictionary<std::string, size_t> maritalStatuses;
+    size_t count;
 };
 
 class Histogram final {
@@ -147,6 +148,7 @@ public:
             stats.genders = partition.genders;
             stats.educations = partition.educations;
             stats.maritalStatuses = partition.maritalStatuses;
+            stats.count = partition.ages.GetLength();
             result.Insert(range, stats);
         }
 
