@@ -63,7 +63,11 @@ struct PartitionStatistics {
     IDictionary<std::string, size_t> genders;
     IDictionary<std::string, size_t> educations;
     IDictionary<std::string, size_t> maritalStatuses;
-    size_t count;
+
+    ArraySequence<int> agesData;
+    ArraySequence<int> weightsData;
+    ArraySequence<int> heightsData;
+    ArraySequence<int> salariesData;
 };
 
 class Histogram final {
@@ -148,7 +152,10 @@ public:
             stats.genders = partition.genders;
             stats.educations = partition.educations;
             stats.maritalStatuses = partition.maritalStatuses;
-            stats.count = partition.ages.GetLength();
+            stats.agesData = partition.ages;
+            stats.weightsData = partition.weights;
+            stats.heightsData = partition.heights;
+            stats.salariesData = partition.salaries;
             result.Insert(range, stats);
         }
 
