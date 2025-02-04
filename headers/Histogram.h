@@ -100,7 +100,7 @@ class Histogram final {
 
     Range getRange(const int field, const ArraySequence<Range>& ranges) {
         for (const auto& range: ranges) {
-            if (field >= range.first && field <= range.second) {
+            if (field >= range.first && field < range.second) {
                 return range;
             }
         }

@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Charts Core Gui Widgets REQUIRED)
 
 add_executable(lab3 main.cpp
         headers/Concepts.h
@@ -27,4 +27,4 @@ add_executable(lab3 main.cpp
         UI/source/HistogramWindow.cpp
 )
 
-target_link_libraries(lab3 PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets)
+target_link_libraries(lab3 PRIVATE Qt6::Charts Qt6::Core Qt6::Gui Qt6::Widgets)
